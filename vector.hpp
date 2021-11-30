@@ -11,9 +11,8 @@ namespace sjtu {
  * a data container like std::vector
  * store data in a successive memory and support random access.
  */
-template<typename T>
-class vector {
-public:
+template <typename T> class vector {
+  public:
     /**
      * TODO
      * a type for actions of the elements of a vector, and you should write
@@ -24,32 +23,33 @@ public:
      */
     class const_iterator;
     class iterator {
-    private:
+      private:
         /**
          * TODO add data members
          *   just add whatever you want.
          */
-    public:
+      public:
         /**
          * return a new iterator which pointer n-next elements
          * as well as operator-
          */
         iterator operator+(const int &n) const {
-            //TODO
+            // TODO
         }
         iterator operator-(const int &n) const {
-            //TODO
+            // TODO
         }
         // return the distance between two iterators,
-        // if these two iterators point to different vectors, throw invaild_iterator.
+        // if these two iterators point to different vectors, throw
+        // invaild_iterator.
         int operator-(const iterator &rhs) const {
-            //TODO
+            // TODO
         }
-        iterator& operator+=(const int &n) {
-            //TODO
+        iterator &operator+=(const int &n) {
+            // TODO
         }
-        iterator& operator-=(const int &n) {
-            //TODO
+        iterator &operator-=(const int &n) {
+            // TODO
         }
         /**
          * TODO iter++
@@ -58,7 +58,7 @@ public:
         /**
          * TODO ++iter
          */
-        iterator& operator++() {}
+        iterator &operator++() {}
         /**
          * TODO iter--
          */
@@ -66,13 +66,14 @@ public:
         /**
          * TODO --iter
          */
-        iterator& operator--() {}
+        iterator &operator--() {}
         /**
          * TODO *it
          */
-        T& operator*() const{}
+        T &operator*() const {}
         /**
-         * a operator to check whether two iterators are same (pointing to the same memory address).
+         * a operator to check whether two iterators are same (pointing to the
+         * same memory address).
          */
         bool operator==(const iterator &rhs) const {}
         bool operator==(const const_iterator &rhs) const {}
@@ -86,9 +87,7 @@ public:
      * TODO
      * has same function as iterator, just for a const object.
      */
-    class const_iterator {
-
-    };
+    class const_iterator {};
     /**
      * TODO Constructs
      * Atleast two: default constructor, copy constructor
@@ -107,26 +106,26 @@ public:
      * assigns specified element with bounds checking
      * throw index_out_of_bound if pos is not in [0, size)
      */
-    T & at(const size_t &pos) {}
-    const T & at(const size_t &pos) const {}
+    T &at(const size_t &pos) {}
+    const T &at(const size_t &pos) const {}
     /**
      * assigns specified element with bounds checking
      * throw index_out_of_bound if pos is not in [0, size)
      * !!! Pay attentions
      *   In STL this operator does not check the boundary but I want you to do.
      */
-    T & operator[](const size_t &pos) {}
-    const T & operator[](const size_t &pos) const {}
+    T &operator[](const size_t &pos) {}
+    const T &operator[](const size_t &pos) const {}
     /**
      * access the first element.
      * throw container_is_empty if size == 0
      */
-    const T & front() const {}
+    const T &front() const {}
     /**
      * access the last element.
      * throw container_is_empty if size == 0
      */
-    const T & back() const {}
+    const T &back() const {}
     /**
      * returns an iterator to the beginning.
      */
@@ -158,13 +157,15 @@ public:
      * inserts value at index ind.
      * after inserting, this->at(ind) == value
      * returns an iterator pointing to the inserted value.
-     * throw index_out_of_bound if ind > size (in this situation ind can be size because after inserting the size will increase 1.)
+     * throw index_out_of_bound if ind > size (in this situation ind can be size
+     * because after inserting the size will increase 1.)
      */
     iterator insert(const size_t &ind, const T &value) {}
     /**
      * removes the element at pos.
      * return an iterator pointing to the following element.
-     * If the iterator pos refers the last element, the end() iterator is returned.
+     * If the iterator pos refers the last element, the end() iterator is
+     * returned.
      */
     iterator erase(iterator pos) {}
     /**
@@ -184,7 +185,6 @@ public:
     void pop_back() {}
 };
 
-
-}
+} // namespace sjtu
 
 #endif
