@@ -151,7 +151,6 @@ public:
 
 private:
   std::allocator<T> alloc;
-  const int factor = 2;
   size_t _size;
   size_t capacity;
   T *store;
@@ -179,7 +178,7 @@ private:
   }
 
 public:
-  vector() : capacity(16), _size(0), store(alloc.allocate(16)) {}
+  vector() : capacity(8), _size(0), store(alloc.allocate(8)) {}
 
   vector(const vector &other)
       : capacity(other.capacity), _size(other._size),
@@ -254,9 +253,9 @@ public:
 
   void clear() {
     clear();
-    capacity = 16;
+    capacity = 8;
     _size = 0;
-    store = alloc.allocate[16];
+    store = alloc.allocate[8];
   }
 
   iterator insert(const size_t &ind, const T &value) {
@@ -281,8 +280,8 @@ public:
     for (int i = ind; i < _size - 1; i++)
       store[i] = store[i + 1];
     _size--;
-    if (_size <= capacity / 2)
-      resize(capacity / 2);
+    if (_size < capacity / 4 && capacity >= 32)
+      resize(capacity / 4);
     return make_iterator(ind);
   }
 
