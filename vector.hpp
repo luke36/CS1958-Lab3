@@ -6,29 +6,38 @@
 #include <climits>
 #include <cstddef>
 #include <cstdlib>
-#include <malloc.h>
-namespace sjtu {
+#include <memory>
 
+namespace sjtu {
 template <typename T> class vector {
   friend class iterator;
   friend class const_iterator;
 
 private:
+  std::allocator<T> alloc;
   const int factor = 2;
   size_t _size;
   size_t capacity;
   T *store;
+
+  void clean() {
+    for (int i = 0; i < _size; i++)
+      alloc.destroy(&store[i]);
+    alloc.deallocate(store, capacity);
+  }
+
   void resize(int new_capacity) {
     capacity = new_capacity;
-    T *new_store = (T *)malloc(sizeof(T) * new_capacity);
+    T *new_store = alloc.allocate(new_capacity);
     for (int i = 0; i < _size; i++)
       new_store[i] = store[i];
-    free(store);
+    clean();
     store = new_store;
   }
 
 public:
   class const_iterator;
+
   class iterator {
     friend class vector<T>;
 
@@ -91,6 +100,7 @@ public:
     }
 
     bool operator!=(const iterator &rhs) const { return !(*this == rhs); }
+
     bool operator!=(const const_iterator &rhs) const { return !(*this == rhs); }
   };
 
@@ -170,25 +180,25 @@ private:
   }
 
 public:
-  vector() : capacity(16), _size(0), store((T *)malloc(sizeof(T) * 16)) {}
+  vector() : capacity(16), _size(0), store(alloc.allocate(16)) {}
 
   vector(const vector &other)
       : capacity(other.capacity), _size(other._size),
-        store((T *)malloc(sizeof(T) * other.capacity)) {
+        store(alloc.allocate(other.capacity)) {
     for (int i = 0; i < other._size; i++)
-      store[i] = other.store[i];
+      alloc.construct(store + i, other.store[i]);
   }
 
-  ~vector() { free(store); }
+  ~vector() { clean(); }
 
   vector &operator=(const vector &other) {
     if (this != &other) {
-      free(store);
+      clean();
       capacity = other.capacity;
       _size = other._size;
-      store = (T *)malloc(sizeof(T) * capacity);
+      store = alloc.allocate(capacity);
       for (int i = 0; i < other._size; i++)
-        store[i] = other.store[i];
+        alloc.construct(store + i, other.store[i]);
     }
     return *this;
   }
@@ -231,7 +241,7 @@ public:
   }
 
   iterator end() { return make_iterator(_size); }
-  
+
   const_iterator cend() const {
     const_iterator i;
     i.vect = this;
@@ -244,10 +254,10 @@ public:
   size_t size() const { return _size; }
 
   void clear() {
+    clear();
     capacity = 16;
     _size = 0;
-    free(store);
-    store = (T *)malloc(sizeof(T) * 16);
+    store = alloc.allocate[16];
   }
 
   iterator insert(const size_t &ind, const T &value) {
@@ -257,7 +267,7 @@ public:
       resize(capacity * 2);
     for (int i = _size - 1; i >= ind && i >= 0; i--)
       store[i + 1] = store[i];
-    store[ind] = T(value);
+    alloc.construct(store + ind, value);
     _size++;
     return make_iterator(ind);
   }
