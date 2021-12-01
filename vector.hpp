@@ -43,6 +43,7 @@ public:
       res.pos = pos + n;
       return res;
     }
+
     iterator operator-(const int &n) const {
       iterator res;
       res.vect = vect;
@@ -55,10 +56,12 @@ public:
         throw invalid_iterator();
       return pos - rhs.pos;
     }
+
     iterator &operator+=(const int &n) {
       pos += n;
       return *this;
     }
+
     iterator &operator-=(const int &n) {
       pos -= n;
       return *this;
@@ -105,6 +108,7 @@ public:
       res.pos = pos + n;
       return res;
     }
+
     const_iterator operator-(const int &n) const {
       const_iterator res;
       res.vect = vect;
@@ -117,10 +121,12 @@ public:
         throw invalid_iterator();
       return pos - rhs.pos;
     }
+
     const_iterator &operator+=(const int &n) {
       pos += n;
       return *this;
     }
+
     const_iterator &operator-=(const int &n) {
       pos -= n;
       return *this;
@@ -145,11 +151,13 @@ public:
     bool operator==(const iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
     }
+
     bool operator==(const const_iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
     }
 
     bool operator!=(const iterator &rhs) const { return !(*this == rhs); }
+
     bool operator!=(const const_iterator &rhs) const { return !(*this == rhs); }
   };
 
@@ -163,6 +171,7 @@ private:
 
 public:
   vector() : capacity(16), _size(0), store((T *)malloc(sizeof(T) * 16)) {}
+
   vector(const vector &other)
       : capacity(other.capacity), _size(other._size),
         store((T *)malloc(sizeof(T) * other.capacity)) {
@@ -189,6 +198,7 @@ public:
       throw index_out_of_bound();
     return store[pos];
   }
+
   const T &at(const size_t &pos) const {
     if (pos >= _size)
       throw index_out_of_bound();
@@ -196,6 +206,7 @@ public:
   }
 
   T &operator[](const size_t &pos) { return at(pos); }
+
   const T &operator[](const size_t &pos) const { return at(pos); }
 
   const T &front() const {
@@ -211,6 +222,7 @@ public:
   }
 
   iterator begin() { return make_iterator(0); }
+
   const_iterator cbegin() const {
     const_iterator i;
     i.vect = this;
@@ -219,6 +231,7 @@ public:
   }
 
   iterator end() { return make_iterator(_size); }
+  
   const_iterator cend() const {
     const_iterator i;
     i.vect = this;
