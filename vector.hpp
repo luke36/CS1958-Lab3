@@ -8,10 +8,7 @@
 #include <cstdlib>
 #include <malloc.h>
 namespace sjtu {
-/**
- * a data container like std::vector
- * store data in a successive memory and support random access.
- */
+
 template <typename T> class vector {
   friend class iterator;
   friend class const_iterator;
@@ -31,14 +28,6 @@ private:
   }
 
 public:
-  /**
-   * TODO
-   * a type for actions of the elements of a vector, and you should write
-   *   a class named const_iterator with same interfaces.
-   */
-  /**
-   * you can see RandomAccessIterator at CppReference for help.
-   */
   class const_iterator;
   class iterator {
     friend class vector<T>;
@@ -48,10 +37,6 @@ public:
     int pos;
 
   public:
-    /**
-     * return a new iterator which pointer n-next elements
-     * as well as operator-
-     */
     iterator operator+(const int &n) const {
       iterator res;
       res.vect = vect;
@@ -64,9 +49,7 @@ public:
       res.pos = pos - n;
       return res;
     }
-    // return the distance between two iterators,
-    // if these two iterators point to different vectors, throw
-    // invaild_iterator.
+
     int operator-(const iterator &rhs) const {
       if (vect != rhs.vect)
         throw invalid_iterator();
@@ -80,53 +63,34 @@ public:
       pos -= n;
       return *this;
     }
-    /**
-     * TODO ++iter
-     */
+
     iterator &operator++() { return *this += 1; }
-    /**
-     * TODO iter++
-     */
+
     iterator operator++(int) {
       ++(*this);
       return *this - 1;
     }
-    /**
-     * TODO --iter
-     */
+
     iterator &operator--() { return *this -= 1; }
-    /**
-     * TODO iter--
-     */
+
     iterator operator--(int) {
       --(*this);
       return *this + 1;
     }
 
-    /**
-     * TODO *it
-     */
     T &operator*() const { return vect->store[pos]; }
-    /**
-     * a operator to check whether two iterators are same (pointing to the
-     * same memory address).
-     */
+
     bool operator==(const iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
     }
     bool operator==(const const_iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
     }
-    /**
-     * some other operator for iterator.
-     */
+
     bool operator!=(const iterator &rhs) const { return !(*this == rhs); }
     bool operator!=(const const_iterator &rhs) const { return !(*this == rhs); }
   };
-  /**
-   * TODO
-   * has same function as iterator, just for a const object.
-   */
+
   class const_iterator {
     friend class vector<T>;
 
@@ -135,10 +99,6 @@ public:
     int pos;
 
   public:
-    /**
-     * return a new iterator which pointer n-next elements
-     * as well as operator-
-     */
     const_iterator operator+(const int &n) const {
       const_iterator res;
       res.vect = vect;
@@ -151,9 +111,7 @@ public:
       res.pos = pos - n;
       return res;
     }
-    // return the distance between two iterators,
-    // if these two iterators point to different vectors, throw
-    // invaild_iterator.
+
     int operator-(const const_iterator &rhs) const {
       if (vect != rhs.vect)
         throw invalid_iterator();
@@ -167,53 +125,34 @@ public:
       pos -= n;
       return *this;
     }
-    /**
-     * TODO ++iter
-     */
+
     const_iterator &operator++() { return *this += 1; }
-    /**
-     * TODO iter++
-     */
+
     const_iterator operator++(int) {
       ++(*this);
       return *this - 1;
     }
-    /**
-     * TODO --iter
-     */
+
     const_iterator &operator--() { return *this -= 1; }
-    /**
-     * TODO iter--
-     */
+
     const_iterator operator--(int) {
       --(*this);
       return *this + 1;
     }
 
-    /**
-     * TODO *it
-     */
     const T &operator*() const { return vect->store[pos]; }
-    /**
-     * a operator to check whether two iterators are same (pointing to the
-     * same memory address).
-     */
+
     bool operator==(const iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
     }
     bool operator==(const const_iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
     }
-    /**
-     * some other operator for iterator.
-     */
+
     bool operator!=(const iterator &rhs) const { return !(*this == rhs); }
     bool operator!=(const const_iterator &rhs) const { return !(*this == rhs); }
   };
-  /**
-   * TODO Constructs
-   * Atleast two: default constructor, copy constructor
-   */
+
 private:
   iterator make_iterator(int pos) {
     iterator i;
@@ -230,13 +169,9 @@ public:
     for (int i = 0; i < other._size; i++)
       store[i] = other.store[i];
   }
-  /**
-   * TODO Destructor
-   */
+
   ~vector() { free(store); }
-  /**
-   * TODO Assignment operator
-   */
+
   vector &operator=(const vector &other) {
     if (this != &other) {
       free(store);
@@ -248,10 +183,7 @@ public:
     }
     return *this;
   }
-  /**
-   * assigns specified element with bounds checking
-   * throw index_out_of_bound if pos is not in [0, size)
-   */
+
   T &at(const size_t &pos) {
     if (pos >= _size)
       throw index_out_of_bound();
@@ -262,35 +194,22 @@ public:
       throw index_out_of_bound();
     return store[pos];
   }
-  /**
-   * assigns specified element with bounds checking
-   * throw index_out_of_bound if pos is not in [0, size)
-   * !!! Pay attentions
-   *   In STL this operator does not check the boundary but I want you to do.
-   */
+
   T &operator[](const size_t &pos) { return at(pos); }
   const T &operator[](const size_t &pos) const { return at(pos); }
-  /**
-   * access the first element.
-   * throw container_is_empty if size == 0
-   */
+
   const T &front() const {
     if (_size == 0)
       throw container_is_empty();
     return store[0];
   }
-  /**
-   * access the last element.
-   * throw container_is_empty if size == 0
-   */
+
   const T &back() const {
     if (_size == 0)
       throw container_is_empty();
     return store[_size - 1];
   }
-  /**
-   * returns an iterator to the beginning.
-   */
+
   iterator begin() { return make_iterator(0); }
   const_iterator cbegin() const {
     const_iterator i;
@@ -298,9 +217,7 @@ public:
     i.pos = 0;
     return i;
   }
-  /**
-   * returns an iterator to the end.
-   */
+
   iterator end() { return make_iterator(_size); }
   const_iterator cend() const {
     const_iterator i;
@@ -308,30 +225,18 @@ public:
     i.pos = _size;
     return i;
   }
-  /**
-   * checks whether the container is empty
-   */
+
   bool empty() const { return (_size == 0); }
-  /**
-   * returns the number of elements
-   */
+
   size_t size() const { return _size; }
-  /**
-   * clears the contents
-   */
+
   void clear() {
     capacity = 16;
     _size = 0;
     free(store);
     store = (T *)malloc(sizeof(T) * 16);
   }
-  /**
-   * inserts value at index ind.
-   * after inserting, this->at(ind) == value
-   * returns an iterator pointing to the inserted value.
-   * throw index_out_of_bound if ind > size (in this situation ind can be size
-   * because after inserting the size will increase 1.)
-   */
+
   iterator insert(const size_t &ind, const T &value) {
     if (ind > _size)
       throw index_out_of_bound();
@@ -343,18 +248,11 @@ public:
     _size++;
     return make_iterator(ind);
   }
-  /**
-   * inserts value before pos
-   * returns an iterator pointing to the inserted value.
-   */
+
   iterator insert(iterator pos, const T &value) {
     return insert(pos.pos, value);
   }
-  /**
-   * removes the element with index ind.
-   * return an iterator pointing to the following element.
-   * throw index_out_of_bound if ind >= size
-   */
+
   iterator erase(const size_t &ind) {
     if (ind >= _size)
       throw index_out_of_bound();
@@ -365,21 +263,11 @@ public:
       resize(capacity / 2);
     return make_iterator(ind);
   }
-  /**
-   * removes the element at pos.
-   * return an iterator pointing to the following element.
-   * If the iterator pos refers the last element, the end() iterator is
-   * returned.
-   */
+
   iterator erase(iterator pos) { return erase(pos.pos); }
-  /**
-   * adds an element to the end.
-   */
+
   void push_back(const T &value) { insert(_size, value); }
-  /**
-   * remove the last element from the end.
-   * throw container_is_empty if size() == 0
-   */
+
   void pop_back() { erase(_size - 1); }
 };
 
