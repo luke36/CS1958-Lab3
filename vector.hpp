@@ -23,7 +23,7 @@ private:
   T *store;
   void resize(int new_capacity) {
     capacity = new_capacity;
-    T *new_store = malloc(sizeof(T) * new_capacity);
+    T *new_store = (T *)malloc(sizeof(T) * new_capacity);
     for (int i = 0; i < _size; i++)
       new_store[i] = store[i];
     free(store);
@@ -81,21 +81,28 @@ public:
       return *this;
     }
     /**
-     * TODO iter++
-     */
-    iterator operator++(int) { return *this - 1; }
-    /**
      * TODO ++iter
      */
     iterator &operator++() { return *this += 1; }
     /**
-     * TODO iter--
+     * TODO iter++
      */
-    iterator operator--(int) { return *this - 1; }
+    iterator operator++(int) {
+      ++(*this);
+      return *this - 1;
+    }
     /**
      * TODO --iter
      */
     iterator &operator--() { return *this -= 1; }
+    /**
+     * TODO iter--
+     */
+    iterator operator--(int) {
+      --(*this);
+      return *this + 1;
+    }
+
     /**
      * TODO *it
      */
@@ -132,14 +139,14 @@ public:
      * return a new iterator which pointer n-next elements
      * as well as operator-
      */
-    iterator operator+(const int &n) const {
-      iterator res;
+    const_iterator operator+(const int &n) const {
+      const_iterator res;
       res.vect = vect;
       res.pos = pos + n;
       return res;
     }
-    iterator operator-(const int &n) const {
-      iterator res;
+    const_iterator operator-(const int &n) const {
+      const_iterator res;
       res.vect = vect;
       res.pos = pos - n;
       return res;
@@ -147,35 +154,42 @@ public:
     // return the distance between two iterators,
     // if these two iterators point to different vectors, throw
     // invaild_iterator.
-    int operator-(const iterator &rhs) const {
+    int operator-(const const_iterator &rhs) const {
       if (vect != rhs.vect)
         throw invalid_iterator();
       return pos - rhs.pos;
     }
-    iterator &operator+=(const int &n) {
+    const_iterator &operator+=(const int &n) {
       pos += n;
       return *this;
     }
-    iterator &operator-=(const int &n) {
+    const_iterator &operator-=(const int &n) {
       pos -= n;
       return *this;
     }
     /**
-     * TODO iter++
-     */
-    iterator operator++(int) { return *this - 1; }
-    /**
      * TODO ++iter
      */
-    iterator &operator++() { return *this += 1; }
+    const_iterator &operator++() { return *this += 1; }
     /**
-     * TODO iter--
+     * TODO iter++
      */
-    iterator operator--(int) { return *this - 1; }
+    const_iterator operator++(int) {
+      ++(*this);
+      return *this - 1;
+    }
     /**
      * TODO --iter
      */
-    iterator &operator--() { return *this -= 1; }
+    const_iterator &operator--() { return *this -= 1; }
+    /**
+     * TODO iter--
+     */
+    const_iterator operator--(int) {
+      --(*this);
+      return *this + 1;
+    }
+
     /**
      * TODO *it
      */
@@ -209,10 +223,10 @@ private:
   }
 
 public:
-  vector() : capacity(16), _size(0), store(malloc(sizeof(T) * 16)) {}
+  vector() : capacity(16), _size(0), store((T *)malloc(sizeof(T) * 16)) {}
   vector(const vector &other)
       : capacity(other.capacity), _size(other._size),
-        store(malloc(sizeof(T) * other.capacity)) {
+        store((T *)malloc(sizeof(T) * other.capacity)) {
     for (int i = 0; i < other._size; i++)
       store[i] = other.store[i];
   }
@@ -224,11 +238,11 @@ public:
    * TODO Assignment operator
    */
   vector &operator=(const vector &other) {
-    if (this != &store) {
+    if (this != &other) {
       free(store);
       capacity = other.capacity;
       _size = other._size;
-      store = malloc(sizeof(T) * capacity);
+      store = (T *)malloc(sizeof(T) * capacity);
       for (int i = 0; i < other._size; i++)
         store[i] = other.store[i];
     }
@@ -277,12 +291,7 @@ public:
   /**
    * returns an iterator to the beginning.
    */
-  iterator begin() {
-    iterator i;
-    i.vect = this;
-    i.pos = 0;
-    return i;
-  }
+  iterator begin() { return make_iterator(0); }
   const_iterator cbegin() const {
     const_iterator i;
     i.vect = this;
@@ -292,16 +301,11 @@ public:
   /**
    * returns an iterator to the end.
    */
-  iterator end() {
-    iterator i;
-    i.vect = this;
-    i.pos = _size - 1;
-    return i;
-  }
+  iterator end() { return make_iterator(_size); }
   const_iterator cend() const {
     const_iterator i;
     i.vect = this;
-    i.pos = _size - 1;
+    i.pos = _size;
     return i;
   }
   /**
@@ -319,7 +323,7 @@ public:
     capacity = 16;
     _size = 0;
     free(store);
-    store = malloc(sizeof(T) * 16);
+    store = (T *)malloc(sizeof(T) * 16);
   }
   /**
    * inserts value at index ind.
@@ -333,9 +337,9 @@ public:
       throw index_out_of_bound();
     if (_size == capacity)
       resize(capacity * 2);
-    for (int i = _size - 1; i >= ind; i--)
+    for (int i = _size - 1; i >= ind && i >= 0; i--)
       store[i + 1] = store[i];
-    store[ind] = value;
+    store[ind] = T(value);
     _size++;
     return make_iterator(ind);
   }
