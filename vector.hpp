@@ -13,28 +13,6 @@ template <typename T> class vector {
   friend class iterator;
   friend class const_iterator;
 
-private:
-  std::allocator<T> alloc;
-  const int factor = 2;
-  size_t _size;
-  size_t capacity;
-  T *store;
-
-  void clean() {
-    for (int i = 0; i < _size; i++)
-      alloc.destroy(&store[i]);
-    alloc.deallocate(store, capacity);
-  }
-
-  void resize(int new_capacity) {
-    capacity = new_capacity;
-    T *new_store = alloc.allocate(new_capacity);
-    for (int i = 0; i < _size; i++)
-      new_store[i] = store[i];
-    clean();
-    store = new_store;
-  }
-
 public:
   class const_iterator;
 
@@ -172,6 +150,27 @@ public:
   };
 
 private:
+  std::allocator<T> alloc;
+  const int factor = 2;
+  size_t _size;
+  size_t capacity;
+  T *store;
+
+  void clean() {
+    for (int i = 0; i < _size; i++)
+      alloc.destroy(&store[i]);
+    alloc.deallocate(store, capacity);
+  }
+
+  void resize(int new_capacity) {
+    capacity = new_capacity;
+    T *new_store = alloc.allocate(new_capacity);
+    for (int i = 0; i < _size; i++)
+      new_store[i] = store[i];
+    clean();
+    store = new_store;
+  }
+
   iterator make_iterator(int pos) {
     iterator i;
     i.vect = this;
@@ -293,7 +292,6 @@ public:
 
   void pop_back() { erase(_size - 1); }
 };
-
 } // namespace sjtu
 
 #endif
