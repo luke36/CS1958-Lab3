@@ -6,6 +6,7 @@
 #include <climits>
 #include <cstddef>
 #include <malloc.h>
+
 namespace sjtu {
 template <typename T> class vector {
   friend class iterator;
@@ -232,9 +233,8 @@ public:
     if (ind >= _size)
       throw index_out_of_bound();
     delete store[ind];
-    if (_size > 0)
-      for (size_t i = ind; i < _size - 1; i++)
-        store[i] = store[i + 1];
+    for (size_t i = ind; i < _size - 1; i++)
+      store[i] = store[i + 1];
     _size--;
     if (_size <= capacity / 4 && capacity >= 4 * default_capacity)
       resize(capacity / 4);
@@ -250,7 +250,6 @@ public:
       erase(_size - 1);
   }
 };
-
 } // namespace sjtu
 
 #endif
