@@ -5,7 +5,6 @@
 
 #include <climits>
 #include <cstddef>
-#include <malloc.h>
 
 namespace sjtu {
 template <typename T> class vector {
@@ -60,7 +59,7 @@ public:
       return *this + 1;
     }
 
-    T &operator*() const { return *(vect->store[pos]); }
+    T &operator*() const { return vect->store[pos]; }
 
     bool operator==(const iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
@@ -118,7 +117,7 @@ public:
       return *this + 1;
     }
 
-    const T &operator*() const { return *(vect->store[pos]); }
+    const T &operator*() const { return vect->store[pos]; }
 
     bool operator==(const iterator &rhs) const {
       return vect == rhs.vect && pos == rhs.pos;
@@ -135,32 +134,31 @@ private:
   const size_t default_capacity = 8;
   size_t _size;
   size_t capacity;
-  T **store;
+  T *store;
 
   void clean() {
     for (size_t i = 0; i < _size; i++)
-      delete store[i];
-    free(store);
+      store[i].~T();
+    operator delete[](store);
   }
 
   void resize(size_t new_capacity) {
     capacity = new_capacity;
-    T **new_store = (T **)malloc(sizeof(T *) * new_capacity);
-    for (size_t i = 0; i < _size; i++)
-      new_store[i] = new T(*store[i]);
-    clean();
+    T *new_store = (T *)operator new[](sizeof(T) * new_capacity);
+    memcpy(new_store, store, _size * sizeof(T));
+    operator delete[](store);
     store = new_store;
   }
 
 public:
   vector()
       : capacity(default_capacity), _size(0),
-        store((T **)malloc(sizeof(T *) * default_capacity)) {}
+        store((T *)operator new[](sizeof(T) * default_capacity)) {}
   vector(const vector &other)
       : capacity(other.capacity), _size(other._size),
-        store((T **)malloc(sizeof(T *) * other.capacity)) {
+        store((T *)operator new[](sizeof(T) * other.capacity)) {
     for (size_t i = 0; i < other._size; i++)
-      store[i] = new T(*other.store[i]);
+      store[i] = T(other.store[i]);
   }
   ~vector() { clean(); }
   vector &operator=(const vector &other) {
@@ -168,9 +166,9 @@ public:
       clean();
       capacity = other.capacity;
       _size = other._size;
-      store = (T **)malloc(sizeof(T *) * capacity);
+      store = (T *)operator new[](sizeof(T) * capacity);
       for (size_t i = 0; i < other._size; i++)
-        store[i] = new T(*other.store[i]);
+        store[i] = T(other.store[i]);
     }
     return *this;
   }
@@ -178,12 +176,12 @@ public:
   T &at(const size_t &pos) {
     if (pos >= _size)
       throw index_out_of_bound();
-    return *store[pos];
+    return store[pos];
   }
   const T &at(const size_t &pos) const {
     if (pos >= _size)
       throw index_out_of_bound();
-    return *store[pos];
+    return store[pos];
   }
 
   T &operator[](const size_t &pos) { return at(pos); }
@@ -207,7 +205,7 @@ public:
     clean();
     capacity = default_capacity;
     _size = 0;
-    store = (T **)malloc(sizeof(T *) * default_capacity);
+    store = (T *)operator new[](sizeof(T) * default_capacity);
   }
 
   iterator insert(const size_t &ind, const T &value) {
@@ -217,10 +215,10 @@ public:
       resize(capacity * 2);
     if (_size > 0) {
       for (size_t i = _size - 1; i >= ind + 1; i--)
-        store[i + 1] = store[i];
-      store[ind + 1] = store[ind];
+        memcpy(&store[i + 1], &store[i], sizeof(T));
+      memcpy(&store[ind + 1], &store[ind], sizeof(T));
     }
-    store[ind] = new T(value);
+    new (&store[ind]) T(value);
     _size++;
     return iterator(this, ind);
   }
@@ -232,9 +230,9 @@ public:
   iterator erase(const size_t &ind) {
     if (ind >= _size)
       throw index_out_of_bound();
-    delete store[ind];
+    store[ind].~T();
     for (size_t i = ind; i < _size - 1; i++)
-      store[i] = store[i + 1];
+      memcpy(&store[i], &store[i + 1], sizeof(T));
     _size--;
     if (_size <= capacity / 4 && capacity >= 4 * default_capacity)
       resize(capacity / 4);
