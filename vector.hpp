@@ -5,28 +5,11 @@
 
 #include <climits>
 #include <cstddef>
-#include <cstdlib>
 #include <malloc.h>
 namespace sjtu {
 template <typename T> class vector {
   friend class iterator;
   friend class const_iterator;
-
-private:
-  const size_t factor = 2;
-  size_t _size;
-  size_t capacity;
-  T **store;
-  void resize(size_t new_capacity) {
-    capacity = new_capacity;
-    T **new_store = (T **)malloc(sizeof(T *) * new_capacity);
-    for (size_t i = 0; i < _size; i++) {
-      new_store[i] = new T(*store[i]);
-      delete store[i];
-    }
-    free(store);
-    store = new_store;
-  }
 
 public:
   class const_iterator;
@@ -37,18 +20,16 @@ public:
     vector<T> *vect;
     size_t pos;
 
+    iterator(vector<T> *v, size_t p) : vect(v), pos(p) {}
+
   public:
+    iterator() = default;
+
     iterator operator+(const size_t &n) const {
-      iterator res;
-      res.vect = vect;
-      res.pos = pos + n;
-      return res;
+      return iterator(vect, pos + n);
     }
     iterator operator-(const size_t &n) const {
-      iterator res;
-      res.vect = vect;
-      res.pos = pos - n;
-      return res;
+      return iterator(vect, pos - n);
     }
 
     size_t operator-(const iterator &rhs) const {
@@ -56,6 +37,7 @@ public:
         throw invalid_iterator();
       return pos - rhs.pos;
     }
+
     iterator &operator+=(const size_t &n) {
       pos += n;
       return *this;
@@ -66,14 +48,12 @@ public:
     }
 
     iterator &operator++() { return *this += 1; }
-
     iterator operator++(int) {
       ++(*this);
       return *this - 1;
     }
 
     iterator &operator--() { return *this -= 1; }
-
     iterator operator--(int) {
       --(*this);
       return *this + 1;
@@ -98,18 +78,16 @@ public:
     const vector<T> *vect;
     size_t pos;
 
+    const_iterator(const vector<T> *v, size_t p) : vect(v), pos(p) {}
+
   public:
+    const_iterator() = default;
+
     const_iterator operator+(const size_t &n) const {
-      const_iterator res;
-      res.vect = vect;
-      res.pos = pos + n;
-      return res;
+      return const_iterator(vect, pos + n);
     }
     const_iterator operator-(const size_t &n) const {
-      const_iterator res;
-      res.vect = vect;
-      res.pos = pos - n;
-      return res;
+      return const_iterator(vect, pos - n);
     }
 
     size_t operator-(const const_iterator &rhs) const {
@@ -117,6 +95,7 @@ public:
         throw invalid_iterator();
       return pos - rhs.pos;
     }
+
     const_iterator &operator+=(const size_t &n) {
       pos += n;
       return *this;
@@ -127,18 +106,17 @@ public:
     }
 
     const_iterator &operator++() { return *this += 1; }
-
     const_iterator operator++(int) {
       ++(*this);
       return *this - 1;
     }
 
     const_iterator &operator--() { return *this -= 1; }
-
     const_iterator operator--(int) {
       --(*this);
       return *this + 1;
     }
+
     const T &operator*() const { return *(vect->store[pos]); }
 
     bool operator==(const iterator &rhs) const {
@@ -153,31 +131,40 @@ public:
   };
 
 private:
-  iterator make_iterator(size_t pos) {
-    iterator i;
-    i.vect = this;
-    i.pos = pos;
-    return i;
+  const size_t default_capacity = 8;
+  size_t _size;
+  size_t capacity;
+  T **store;
+
+  void clean() {
+    for (size_t i = 0; i < _size; i++)
+      delete store[i];
+    free(store);
+  }
+
+  void resize(size_t new_capacity) {
+    capacity = new_capacity;
+    T **new_store = (T **)malloc(sizeof(T *) * new_capacity);
+    for (size_t i = 0; i < _size; i++)
+      new_store[i] = new T(*store[i]);
+    clean();
+    store = new_store;
   }
 
 public:
-  vector() : capacity(16), _size(0), store((T **)malloc(sizeof(T *) * 16)) {}
+  vector()
+      : capacity(default_capacity), _size(0),
+        store((T **)malloc(sizeof(T *) * default_capacity)) {}
   vector(const vector &other)
       : capacity(other.capacity), _size(other._size),
         store((T **)malloc(sizeof(T *) * other.capacity)) {
     for (size_t i = 0; i < other._size; i++)
       store[i] = new T(*other.store[i]);
   }
-  ~vector() {
-    for (size_t i = 0; i < _size; i++)
-      delete store[i];
-    free(store);
-  }
+  ~vector() { clean(); }
   vector &operator=(const vector &other) {
     if (this != &other) {
-      for (size_t i = 0; i < _size; i++)
-        delete store[i];
-      free(store);
+      clean();
       capacity = other.capacity;
       _size = other._size;
       store = (T **)malloc(sizeof(T *) * capacity);
@@ -205,33 +192,21 @@ public:
 
   const T &back() const { return at(_size - 1); }
 
-  iterator begin() { return make_iterator(0); }
-  const_iterator cbegin() const {
-    const_iterator i;
-    i.vect = this;
-    i.pos = 0;
-    return i;
-  }
+  iterator begin() { return iterator(this, 0); }
+  const_iterator cbegin() const { return const_iterator(this, 0); }
 
-  iterator end() { return make_iterator(_size); }
-  const_iterator cend() const {
-    const_iterator i;
-    i.vect = this;
-    i.pos = _size;
-    return i;
-  }
+  iterator end() { return iterator(this, _size); }
+  const_iterator cend() const { return const_iterator(this, _size); }
 
   bool empty() const { return (_size == 0); }
 
   size_t size() const { return _size; }
 
   void clear() {
-    capacity = 16;
+    clean();
+    capacity = default_capacity;
     _size = 0;
-    for (size_t i = 0; i < _size; i++)
-      delete store[i];
-    free(store);
-    store = (T **)malloc(sizeof(T *) * 16);
+    store = (T **)malloc(sizeof(T *) * default_capacity);
   }
 
   iterator insert(const size_t &ind, const T &value) {
@@ -246,7 +221,7 @@ public:
     }
     store[ind] = new T(value);
     _size++;
-    return make_iterator(ind);
+    return iterator(this, ind);
   }
 
   iterator insert(iterator pos, const T &value) {
@@ -261,9 +236,9 @@ public:
       for (size_t i = ind; i < _size - 1; i++)
         store[i] = store[i + 1];
     _size--;
-    if (_size <= capacity / 2)
-      resize(capacity / 2);
-    return make_iterator(ind);
+    if (_size <= capacity / 4 && capacity >= 4 * default_capacity)
+      resize(capacity / 4);
+    return iterator(this, ind);
   }
 
   iterator erase(iterator pos) { return erase(pos.pos); }
