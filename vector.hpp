@@ -158,7 +158,7 @@ public:
       : capacity(other.capacity), _size(other._size),
         store((T *)operator new[](sizeof(T) * other.capacity)) {
     for (size_t i = 0; i < other._size; i++)
-      store[i] = T(other.store[i]);
+      new (store + i) T(other.store[i]);
   }
   ~vector() { clean(); }
   vector &operator=(const vector &other) {
@@ -168,7 +168,7 @@ public:
       _size = other._size;
       store = (T *)operator new[](sizeof(T) * capacity);
       for (size_t i = 0; i < other._size; i++)
-        store[i] = T(other.store[i]);
+        new (store + i) T(other.store[i]);
     }
     return *this;
   }
@@ -213,12 +213,12 @@ public:
       throw index_out_of_bound();
     if (_size == capacity)
       resize(capacity * 2);
-    if (_size > 0) {
+    if (_size > ind) {
       for (size_t i = _size - 1; i >= ind + 1; i--)
-        memcpy(&store[i + 1], &store[i], sizeof(T));
-      memcpy(&store[ind + 1], &store[ind], sizeof(T));
+        memcpy(store + i + 1, store + i, sizeof(T));
+      memcpy(store + ind + 1, store + ind, sizeof(T));
     }
-    new (&store[ind]) T(value);
+    new (store + ind) T(value);
     _size++;
     return iterator(this, ind);
   }
@@ -232,7 +232,7 @@ public:
       throw index_out_of_bound();
     store[ind].~T();
     for (size_t i = ind; i < _size - 1; i++)
-      memcpy(&store[i], &store[i + 1], sizeof(T));
+      memcpy(store + i, store + i + 1, sizeof(T));
     _size--;
     if (_size <= capacity / 4 && capacity >= 4 * default_capacity)
       resize(capacity / 4);
