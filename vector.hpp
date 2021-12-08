@@ -187,9 +187,17 @@ public:
   T &operator[](const size_t &pos) { return at(pos); }
   const T &operator[](const size_t &pos) const { return at(pos); }
 
-  const T &front() const { return at(0); }
+  const T &front() const {
+    if (_size == 0)
+      throw container_is_empty();
+    return at(0);
+  }
 
-  const T &back() const { return at(_size - 1); }
+  const T &back() const {
+    if (_size == 0)
+      throw container_is_empty();
+    return at(_size - 1);
+  }
 
   iterator begin() { return iterator(this, 0); }
   const_iterator cbegin() const { return const_iterator(this, 0); }
