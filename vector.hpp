@@ -252,8 +252,9 @@ public:
   void push_back(const T &value) { insert(_size, value); }
 
   void pop_back() {
-    if (_size > 0)
-      erase(_size - 1);
+    if (_size == 0)
+      throw container_is_empty();
+    erase(_size - 1);
   }
 };
 } // namespace sjtu
