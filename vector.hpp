@@ -145,7 +145,10 @@ private:
   void resize(size_t new_capacity) {
     capacity = new_capacity;
     T *new_store = (T *)operator new[](sizeof(T) * new_capacity);
-    memcpy(new_store, store, _size * sizeof(T));
+    for (size_t i = 0; i < _size; i++) {
+      new (new_store + i) T(store[i]);
+      store[i].~T();
+    }
     operator delete[](store);
     store = new_store;
   }
@@ -223,8 +226,8 @@ public:
       resize(capacity * 2);
     if (_size > ind) {
       for (size_t i = _size - 1; i >= ind + 1; i--)
-        memcpy(store + i + 1, store + i, sizeof(T));
-      memcpy(store + ind + 1, store + ind, sizeof(T));
+        new (store + i + 1) T(store[i]);
+      new (store + ind + 1) T(store[ind]);
     }
     new (store + ind) T(value);
     _size++;
@@ -240,7 +243,7 @@ public:
       throw index_out_of_bound();
     store[ind].~T();
     for (size_t i = ind; i < _size - 1; i++)
-      memcpy(store + i, store + i + 1, sizeof(T));
+      new (store + i) T(store[i + 1]);
     _size--;
     if (_size <= capacity / 4 && capacity >= 4 * default_capacity)
       resize(capacity / 4);
