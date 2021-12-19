@@ -145,11 +145,9 @@ private:
   void resize(size_t new_capacity) {
     capacity = new_capacity;
     T *new_store = (T *)operator new[](sizeof(T) * new_capacity);
-    for (size_t i = 0; i < _size; i++) {
+    for (size_t i = 0; i < _size; i++)
       new (new_store + i) T(store[i]);
-      store[i].~T();
-    }
-    operator delete[](store);
+    clean();
     store = new_store;
   }
 
